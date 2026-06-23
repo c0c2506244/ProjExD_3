@@ -159,12 +159,12 @@ class explosion: #演習３
     """
     def __init__(self, bomb: "Bomb"):
         # 元の画像と、上下左右にflipしたものの2つのSurfaceをリストに格納
-        img0 = pg.image.load(f"fig/explosion.gif")
-        img1 = pg.transform.flip(img0, True, True)
-        self.imgs = [img0, img1]
+        img_before = pg.image.load(f"fig/explosion.gif")
+        img_after = pg.transform.flip(img_before, True, True)
+        self.imgs = [img_before, img_after]
         
         # 爆発した爆弾のrct.centerに座標を設定
-        self.rct = img0.get_rect()
+        self.rct = img_before.get_rect()
         self.rct.center = bomb.rct.center
         
         # 表示時間（爆発時間）lifeを設定（例: 20フレーム分）
