@@ -140,7 +140,7 @@ class Bomb:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
-class Score:
+class Score:#演習２
     def __init__(self):
         self.fonto = pg.font.Font(None, 50)
         self.color = (0, 0, 255)
@@ -153,6 +153,32 @@ class Score:
         self.img = self.fonto.render(f"Score: {self.score}", 0, self.color) #現在のスコアを表示させる文字列Surfaceの生成
         screen.blit(self.img, self.rct) #スクリーンにblit
 
+class explosion: #演習３
+    """
+    爆弾が爆発した際のエフェクトに関するクラス
+    """
+    def __init__(self, bomb: "Bomb"):
+        # 元の画像と、上下左右にflipしたものの2つのSurfaceをリストに格納
+        img0 = pg.image.load(f"fig/explosion.gif")
+        img1 = pg.transform.flip(img0, True, True)
+        self.imgs = [img0, img1]
+        
+        # 爆発した爆弾のrct.centerに座標を設定
+        self.rct = img0.get_rect()
+        self.rct.center = bomb.rct.center
+        
+        # 表示時間（爆発時間）lifeを設定（例: 20フレーム分）
+        self.life = 20
+
+    def update(self, screen: pg.Surface):
+        # 爆発経過時間lifeを1減算
+        self.life -= 1
+        
+        # 爆発経過時間lifeが正なら、Surfaceリストを交互に切り替えて爆発を演出
+        if self.life > 0:
+            # lifeの偶奇を利用して、目がチラチラしないように交互に切り替える
+            img_idx = self.life % 2
+            screen.blit(self.imgs[img_idx], self.rct)
 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
@@ -171,6 +197,9 @@ def main():
 
     # beam = None  # ゲーム初期化時にはビームは存在しない
     beams = [] #★(初期化) Beamクラスのインスタンスを複数扱うための空のリストを作る
+
+    explosions = []#演習３
+
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -202,6 +231,9 @@ def main():
                     if beam.rct.colliderect(bomb.rct):
                         bird.change_img(6, screen)
                         pg.display.update()
+
+                        explosions.append(explosion(bomb)) #演習３
+
                         beams[j] = None  # ビームを消す
                         bombs[i] = None  # 爆弾を消す
                         score.score += 1 #演習１
@@ -209,12 +241,16 @@ def main():
         beams = [beam for beam in beams if beam is not None and check_bound(beam.rct) == (True, True)]
         bombs = [bomb for bomb in bombs if bomb is not None]
 
+        explosions = [exp for exp in explosions if exp.life > 0] #演習３
+
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         for beam in beams:  #beamが出現したら
             beam.update(screen)
         for bomb in bombs: 
             bomb.update(screen)
+        for exp in explosions: #演習３
+            exp.update(screen)
         score.update(screen)#演習１
         pg.display.update()
         tmr += 1
